@@ -7,27 +7,14 @@
   #define rxPin D5
   #define txPin D6
   SoftwareSerial SoftwareSerial_ESP8266(rxPin, txPin);
-  bool const debug_read   = true;
-  bool const debug_write  = false;
-  int debug_numberofbytes_available = 0;
-  char read_5bytes = 0;
-  char read_bytes_empty = 0; 
-
   // ################### READ
-    char received_data[50];
-    int read_ctn = 0;     // type "byte" does not work
-    int dummy = 0;    // type "byte" does not work
+    char incoming_char_array[50]; // max. number of signs in data string
+    int read_ctn = 0;         
+    int dummy = 0;            // type "byte" does not work
   // ################### SEND
-    char data_to_send[50]; // Puffer für die Datenübertragung (max. Länge der Nachricht festlegen)
-    int snd_ctn = 5; // type "byte" does not work
+    char send_char_array[50];
+    int snd_ctn = 5;          
 
-// ################### JSON
-  // ################### READ JSON
-    // String READ_JSON = "";
-  // ################### SEND JSON
-    // JSONVar json_send_output;
-    // String SEND_JSON = "";
-    // byte json_snd_ctn = 0;
 // ############################ Timer for timed loops
   const bool debug_timers = false;
 
@@ -67,40 +54,15 @@ void loop() {
       cycle_50ms_dt = millisec;
     // ################### READ
       if (SoftwareSerial_ESP8266.available()) {
-        delay(50);  // Kurze Verzögerung, um sicherzustellen, dass alle Daten empfangen wurden
+        delay(50);  // short delay that all received data is present at the Rx
+        String _incoming_string = SoftwareSerial_ESP8266.readStringUntil('\n'); // read Rx until \n
+        _incoming_string.toCharArray(incoming_char_array, 50); // copy data to char-Array (for sscanf)
+        PRINT_VARIABLE(incoming_char_array);  //debugging
 
-        // Empfange die Daten als String (bis zum Zeilenumbruch '\n')
-        String incoming_data = SoftwareSerial_ESP8266.readStringUntil('\n');
-
-        // Kopiere die empfangenen Daten in ein char-Array für sscanf()
-        incoming_data.toCharArray(received_data, 50);
-        PRINT_VARIABLE(received_data);
-
-        // Dekodiere die Daten aus der CSV-ähnlichen Zeichenkette
-        sscanf(received_data, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u", &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &read_ctn);
+        // decode data from char-array
+        sscanf(incoming_char_array, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u", &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &read_ctn);
         PRINT_VARIABLE(read_ctn);
       }    
-    // ################### JSON READ
-      // SoftwareSerial_ESP8266.listen(); // Enable SoftwareSerial object to listen
-      // if (SoftwareSerial_ESP8266.isListening()) {     
-      //   while(int number_of_bytes = SoftwareSerial_ESP8266.available() > 0) {
-      //     PRINT_VARIABLE(number_of_bytes);
-
-      //     READ_JSON = SoftwareSerial_ESP8266.readString();
-      //     PRINT_VARIABLE(READ_JSON);
-
-      //     JSONVar json_read_string = JSON.parse(READ_JSON);
-
-      //     // number_of_bytes = SoftwareSerial_ESP8266.available();
-      //     // PRINT_VARIABLE(number_of_bytes);
-
-      //     // // search within json string
-      //     // if (json_read_string.hasOwnProperty("SEND0")) {
-      //     //   PRINT_VARIABLE(json_read_string["SEND0"]);
-      //     // }
-      //     delay(100);
-      //   }
-      // }
   }
 
 // ################### 1000 ms
@@ -110,8 +72,6 @@ void loop() {
       if (debug_timers == true) {
         Serial.println("Start 1000 ms");
       }
-  
-
   }
 
 // ################### 1500 ms
@@ -125,63 +85,9 @@ void loop() {
     snd_ctn++;
 
     // ################### SEND
-      sprintf(data_to_send, "%u,111,222,333,444,555,666,777,888,999,1000", snd_ctn);
-      SoftwareSerial_ESP8266.println(data_to_send);
-      PRINT_VARIABLE(data_to_send);
+      sprintf(send_char_array, "%u,111,222,333,444,555,666,777,888,999,1000", snd_ctn);
+      SoftwareSerial_ESP8266.println(send_char_array);
+      PRINT_VARIABLE(send_char_array);
 
-    // ################### JSON SEND
-      // // json_send_output["SEND0"] = 54321;
-      // // json_send_output["SEND1"] = 0;
-      // // json_send_output["SEND2"] = 0;
-      // // json_send_output["SEND3"] = 0;
-      // // json_send_output["SEND4"] = 0;
-      // // json_send_output["SEND5"] = 0;
-      // // json_send_output["SEND6"] = 0;
-      // // json_send_output["SEND7"] = 0;
-      // // json_send_output["SEND8"] = 0;
-      // json_send_output["SEND9"] = snd_ctn;
-      // // json_send_output["SEND10"] = 0;
-      // // json_send_output["SEND11"] = 0;
-      // // json_send_output["SEND12"] = 0;
-      // // json_send_output["SEND13"] = 0;
-      // // json_send_output["SEND14"] = 0;
-      // // json_send_output["SEND15"] = 0;
-      // // json_send_output["SEND16"] = 0;
-      // // json_send_output["SEND17"] = 0;
-      // // json_send_output["SEND18"] = 0;
-      // // json_send_output["SEND19"] = 0;
-      // // json_send_output["SEND20"] = 123;  
-      // SEND_JSON = JSON.stringify(json_send_output);  // build JSON
-
-      // PRINT_VARIABLE(SEND_JSON);
-      
-      // SoftwareSerial_ESP8266.print(SEND_JSON);  // send to interface (SoftwareSerial)
-    
   }
 }
-
-
-  // if (debug_read == true) {
-  //   if (SoftwareSerial_ESP8266.available() == 5) {
-      
-  //     debug_numberofbytes_available = SoftwareSerial_ESP8266.available();
-  //     PRINT_VARIABLE(debug_numberofbytes_available);
-
-  //     for (int i = 0; i < 5; i++) {
-  //       read_5bytes = SoftwareSerial_ESP8266.read();
-  //       PRINT_VARIABLE(read_5bytes);
-  //     }
-  //   }
-  //   if (SoftwareSerial_ESP8266.available() > 5) {
-      
-  //     debug_numberofbytes_available = SoftwareSerial_ESP8266.available();
-  //     PRINT_VARIABLE(debug_numberofbytes_available);
-
-  //     for (int i = 0; i < debug_numberofbytes_available; i++) {
-  //       read_bytes_empty = SoftwareSerial_ESP8266.read();
-  //       PRINT_VARIABLE(read_bytes_empty);
-  //     }
-  //   }
-  // }
-  // delay(5);
-  // Serial.println("LOOP - software serial");
