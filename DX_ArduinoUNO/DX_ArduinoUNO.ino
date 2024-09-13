@@ -1,11 +1,10 @@
 #include <SoftwareSerial.h>
-// #include <Arduino_JSON.h>   // https://github.com/arduino-libraries/Arduino_JSON.git
 
 // ################### Global
   #define PRINT_VARIABLE(var) Serial.print(#var " = "); Serial.println(var);
 // ################### Software Serial
-  #define rxPin 2
-  #define txPin 3
+  #define rxPin 12
+  #define txPin 13
   SoftwareSerial SoftwareSerial_Arduino(rxPin, txPin);
   // ################### READ
     char incoming_char_array[50]; // max. receive 50 sign's in one incoming string
