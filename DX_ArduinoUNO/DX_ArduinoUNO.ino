@@ -93,6 +93,11 @@
           if (DATAX_ARDU_ESP.rxData(received_data, 50)) {  // check if data is available and get data
             PRINT_VARIABLE(received_data);  // debugging
           }
+
+          // Dekodiere die Daten aus der CSV-ähnlichen Zeichenkette
+          byte _number_of_items = sscanf(received_data, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u", &read_ctn, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy);
+          PRINT_VARIABLE(_number_of_items);
+          PRINT_VARIABLE(read_ctn);
       }
 
   }
