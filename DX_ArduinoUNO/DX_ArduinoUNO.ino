@@ -1,112 +1,100 @@
-#include <SoftwareSerial.h>
+// ################### Johannes Huber 
+// ################### 17.09.2024
 
-// ################### Global
-  #define PRINT_VARIABLE(var) Serial.print(#var " = "); Serial.println(var);
-// ################### Software Serial
-  #define rxPin 12
-  #define txPin 13
-  SoftwareSerial SoftwareSerial_Arduino(rxPin, txPin);
-  // ################### READ
-    const int incoming_char_size = 50; 
-    char incoming_char_array[incoming_char_size]; // max. receive 50 sign's in one incoming string
-    int read_ctn = 0;
-    int dummy = 0;    
-  // ################### SEND
-    char send_char_array[50]; // Puffer für die Datenübertragung (max. Länge der Nachricht festlegen)
-    int snd_ctn = 0;
+// ################### DEFINITION
+  // ################### lib
+    #include "dataexchange.h"   // exchange data via SoftwareSerial
+  // ################### macros
+    #define PRINT_VARIABLE(var) Serial.print(#var " = "); Serial.println(var);
 
-// ################### Funktion - Speicher
-  extern int __heap_start, *__brkval;
-  int freeMemory() {
-      int v;
-      return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+  // ################### variables
+    // ################### dataexchange
+      #define rxPin 2
+      #define txPin 3
+
+      dataexchange DATAX_ARDU_ESP(rxPin, txPin);
+
+      bool const debug_read   = false;
+      bool const debug_write  = true;
+      int debug_bytes_send = 0;
+      // ################### READ
+        char received_data[50]; // Maximale Zeichen in der Variable
+        int read_ctn = 0;
+        int dummy = 0;    
+      // ################### SEND
+        char data_to_send[50]; // Puffer für die Datenübertragung (max. Länge der Nachricht festlegen)
+        int snd_ctn = 0;
+
+  // ################### functions
+    // ################### free memory
+      extern int __heap_start, *__brkval;
+      int freeMemory() {
+          int v;
+          return (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+      }
+  // ################### Timer for timed loops
+
+    struct timer {
+      int cycle_ms            = 1000;      
+      unsigned long cycle_dt  = 0;    
+      const bool debug        = false;  
+    };
+
+    timer t1000ms;    // build instance of timer
+    timer t50ms;
+
+    unsigned long millisec;           // arduino time-ms
+
+// ################### SETUP
+  void setup() {
+    // ################### debug monitor
+      Serial.begin(9600);
+      while (!Serial) {
+        ; // wait for serial port to connect
+      }
+
+    // ################### dataexchange
+      pinMode(rxPin, INPUT);
+      pinMode(txPin, OUTPUT);
+      DATAX_ARDU_ESP.begin(9600);
+    // ################### timers
+      t1000ms.cycle_ms = 1000;  
+      t50ms.cycle_ms = 50;      
   }
-// ############################ Timer for timed loops
-  const bool debug_timers = false;
 
-  const int cycle_1000ms          = 1000;      
-  unsigned long cycle_1000ms_dt   = 0;
+// ################### LOOP
+  void loop() {
+    millisec = millis();      // get time from arduino-clock (time since arduino is running in ms)
+    // ################### 1000 ms
+      if (millisec - t1000ms.cycle_dt >= t1000ms.cycle_ms) {
+          t1000ms.cycle_dt = millisec;
+          if (t1000ms.debug == true) {
+            Serial.println("Start 1000 ms");
+          }
 
-  const int cycle_50ms          = 50;
-  unsigned long cycle_50ms_dt   = 0;
-
-  const int cycle_1500ms          = 1500;
-  unsigned long cycle_1500ms_dt   = 0;
-
-  unsigned long millisec;           // arduino time-ms
-
-void setup() {
-  // ################### Debug Monitor
-    Serial.begin(9600);
-    while (!Serial) {
-      ; // wait for serial port to connect
-    }
-
-  // ################### SoftwareSerial
-    pinMode(rxPin, INPUT);
-    pinMode(txPin, OUTPUT);
-    SoftwareSerial_Arduino.begin(9600); 
-  
-  Serial.println("SETUP - software serial arduino uno");
-}
-void loop() {
-  millisec = millis();      // get time from arduino-clock (time since arduino is running in ms)
-  // ################### 50 ms
-    if (millisec - cycle_50ms_dt >= cycle_50ms) {
-      // ################### 50 ms Timer
-        cycle_50ms_dt = millisec;
-
-      // ################### READ SoftwareSerial
-        if (SoftwareSerial_Arduino.available()) {
-          delay(50);  // short delay, to be sure all data is present at the Rx
-
-          String _incoming_string = SoftwareSerial_Arduino.readStringUntil('\n'); // read Rx
-
-          int _lenght = _incoming_string.length();  // lenght for debugging
-          PRINT_VARIABLE(_lenght);                  // lenght for debugging
-
-
-          _incoming_string.toCharArray(incoming_char_array, incoming_char_size);     // copy data to char-Array (for sscanf)
-
-          PRINT_VARIABLE(incoming_char_array);
-
-          // decode data from char-array
-          byte _number_of_items = sscanf(incoming_char_array, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u", &read_ctn, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy);
-
-          PRINT_VARIABLE(_number_of_items);   // check number of items (here 11)
-          PRINT_VARIABLE(read_ctn);           // print for debugging
-        }
-    }
-  // ################### 1000 ms
-    if (millisec - cycle_1000ms_dt >= cycle_1000ms) {
-      // ################### 1000 ms Timer
-        cycle_1000ms_dt = millisec;
-        if (debug_timers == true) {
-          Serial.println("Start 1000 ms");
-        }
-
-      // ################### SEND SoftwareSerial
         snd_ctn++;
-        sprintf(send_char_array, "6663,0,0,0,0,0,0,0,0,0,%u", snd_ctn);
-        SoftwareSerial_Arduino.println(send_char_array);
-        PRINT_VARIABLE(send_char_array);
 
-      // ################### checking free dynamic memory
-        // Serial.print("Freier Speicher: ");  
-        // Serial.println(freeMemory());
+        // ################### dataexchange SEND
+          sprintf(data_to_send, "0,0,666,0,0,0,0,0,0,0,0,0,%u", snd_ctn);
+          DATAX_ARDU_ESP.txData(data_to_send);
+          PRINT_VARIABLE(data_to_send); // debugging
 
-      // 1000 ms Timer
-        if (debug_timers == true) {
-          Serial.println("End 1000 ms");
-        }   
-    }
 
-  // ################### 1500 ms
-  if (millisec - cycle_1500ms_dt >= cycle_1500ms) {
-    // 1500 ms Timer
-      cycle_1500ms_dt = millisec;
-      if (debug_timers == true) {
-        Serial.println("Start 1500 ms");
-      }  
+          if (t1000ms.debug == true) {
+            Serial.println("End 1000 ms");
+          }   
+      }
+
+    // ################### 50 ms
+      if (millisec - t50ms.cycle_dt >= t50ms.cycle_ms) {
+          t50ms.cycle_dt = millisec;
+
+        // ################### dataexchange READ
+          if (DATAX_ARDU_ESP.rxData(received_data, 50)) {  // check if data is available and get data
+            PRINT_VARIABLE(received_data);  // debugging
+          }
+      }
+
   }
-}
+
+// ################### END
