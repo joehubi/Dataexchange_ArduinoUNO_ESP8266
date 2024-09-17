@@ -3,7 +3,7 @@
 
 // ################### DEFINITION
   // ################### lib
-    #include "dataexchange.h"   // exchange data via SoftwareSerial
+    #include <dataexchange.h>   // exchange data via SoftwareSerial
   // ################### macros
     #define PRINT_VARIABLE(var) Serial.print(#var " = "); Serial.println(var);
 
