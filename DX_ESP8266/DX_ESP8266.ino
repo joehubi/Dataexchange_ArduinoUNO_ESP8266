@@ -65,7 +65,7 @@
       }
 
       sscanf(received_data, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u", &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &read_ctn);
-      PRINT_VARIABLE(read_ctn);
+      // PRINT_VARIABLE(read_ctn);
   
     }
 

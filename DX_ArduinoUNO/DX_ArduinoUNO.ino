@@ -9,8 +9,8 @@
 
   // ################### variables
     // ################### dataexchange
-      #define rxPin 2
-      #define txPin 3
+      #define rxPin 12
+      #define txPin 13
 
       dataexchange DATAX_ARDU_ESP(rxPin, txPin);
 
@@ -96,8 +96,8 @@
 
           // Dekodiere die Daten aus der CSV-ähnlichen Zeichenkette
           byte _number_of_items = sscanf(received_data, "%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u", &read_ctn, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy, &dummy);
-          PRINT_VARIABLE(_number_of_items);
-          PRINT_VARIABLE(read_ctn);
+          // PRINT_VARIABLE(_number_of_items);
+          // PRINT_VARIABLE(read_ctn);
       }
 
   }
